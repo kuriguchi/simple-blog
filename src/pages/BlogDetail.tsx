@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "../lib/supabase";
+import { useAppSelector } from "../store/hooks";
 
 type Blog = {
   id: string;
@@ -18,6 +19,7 @@ type Comment = {
   created_at: string;
   content: string;
   image_url: string | null;
+  username: string | null;
 };
 
 const fallbackImage =
@@ -26,6 +28,7 @@ const fallbackImage =
 export default function BlogDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const user = useAppSelector((state) => state.auth.user);
   const [blog, setBlog] = useState<Blog | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -128,6 +131,8 @@ export default function BlogDetail() {
         imageUrl = publicData?.publicUrl ?? null;
       }
 
+      const username = (user?.user_metadata?.username as string | undefined)?.trim() || "Anonymous";
+
       const { error: insertError } = await supabase
         .from("comments")
         .insert({
@@ -135,6 +140,7 @@ export default function BlogDetail() {
           content: commentText.trim(),
           image_url: imageUrl,
           parent_id: null,
+          username,
         });
 
       if (insertError) throw insertError;
@@ -194,6 +200,8 @@ export default function BlogDetail() {
         imageUrl = publicData?.publicUrl ?? null;
       }
 
+      const username = (user?.user_metadata?.username as string | undefined)?.trim() || "Anonymous";
+
       const { error: insertError } = await supabase
         .from("comments")
         .insert({
@@ -201,6 +209,7 @@ export default function BlogDetail() {
           parent_id: parentId,
           content: replyText.trim(),
           image_url: imageUrl,
+          username,
         });
 
       if (insertError) throw insertError;
@@ -230,7 +239,7 @@ export default function BlogDetail() {
   const renderComment = (comment: Comment, depth = 0) => (
     <div key={comment.id} className="rounded-lg border border-gray-200 bg-white p-4">
       <p className="text-xs text-gray-500">
-        {new Date(comment.created_at).toLocaleString()}
+        {new Date(comment.created_at).toLocaleString()} · By {comment.username ?? "Anonymous"}
       </p>
       <p className="mt-2 text-sm text-gray-700 whitespace-pre-line">
         {comment.content}
