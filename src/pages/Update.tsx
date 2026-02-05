@@ -2,14 +2,6 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 
-type Blog = {
-  id: string;
-  created_at: string;
-  title: string;
-  content: string;
-  image_url: string | null;
-};
-
 export default function Update() {
   const { id } = useParams();
   const navigate = useNavigate();
