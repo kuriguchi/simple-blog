@@ -28,6 +28,7 @@ export default function Create() {
       setError(null);
 
       const username = (user.user_metadata?.username as string | undefined)?.trim() || "Anonymous";
+      const userId = user.id;
 
       let imageUrl: string | null = null;
 
@@ -61,6 +62,7 @@ export default function Create() {
           content: content.trim(),
           image_url: imageUrl,
           username,
+          user_id: userId,
         });
 
       if (insertError) throw insertError;

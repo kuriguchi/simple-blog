@@ -10,6 +10,7 @@ type Blog = {
   content: string;
   image_url: string | null;
   username: string | null;
+  user_id: string | null;
 };
 
 type Comment = {
@@ -326,8 +327,15 @@ export default function BlogDetail() {
     );
   }
 
+  const currentUsername = (user?.user_metadata?.username as string | undefined) ?? user?.email ?? null;
+  const canEdit = Boolean(user && (blog.user_id === user.id || (!blog.user_id && currentUsername && blog.username === currentUsername)));
+
   const handleDelete = async () => {
     if (!id) return;
+    if (!canEdit) {
+      setError("You do not have permission to delete this post.");
+      return;
+    }
     const confirmed = window.confirm("Delete this post? This cannot be undone.");
     if (!confirmed) return;
 
@@ -368,56 +376,58 @@ export default function BlogDetail() {
           </p>
         </div>
 
-        <div className="relative self-end sm:self-auto" ref={menuRef}>
-          <button
-            type="button"
-            onClick={() => setMenuOpen((prev) => !prev)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full !bg-white !text-black shadow-sm hover:!bg-gray-100"
-            aria-label="Open actions"
-          >
-            ⋮
-          </button>
-
-          {menuOpen && (
-            <div
-              className="absolute right-0 mt-2 w-40 rounded-lg border border-gray-200 shadow-lg"
-              style={{ backgroundColor: "#ffffff", color: "#111827" }}
+        {canEdit && (
+          <div className="relative self-end sm:self-auto" ref={menuRef}>
+            <button
+              type="button"
+              onClick={() => setMenuOpen((prev) => !prev)}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full !bg-white !text-black shadow-sm hover:!bg-gray-100"
+              aria-label="Open actions"
             >
-              <button
-                type="button"
-                onClick={() => {
-                  setMenuOpen(false);
-                  navigate(`/update/${id}`);
-                }}
-                className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100"
-                onMouseEnter={() => setHoveredAction("update")}
-                onMouseLeave={() => setHoveredAction(null)}
-                style={{
-                  backgroundColor: hoveredAction === "update" ? "#f3f4f6" : "#ffffff",
-                  color: "#111827",
-                }}
+              ⋮
+            </button>
+
+            {menuOpen && (
+              <div
+                className="absolute right-0 mt-2 w-40 rounded-lg border border-gray-200 shadow-lg"
+                style={{ backgroundColor: "#ffffff", color: "#111827" }}
               >
-                Update
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setMenuOpen(false);
-                  handleDelete();
-                }}
-                disabled={isDeleting}
-                className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-100 disabled:opacity-60"
-                onMouseEnter={() => setHoveredAction("delete")}
-                onMouseLeave={() => setHoveredAction(null)}
-                style={{
-                  backgroundColor: hoveredAction === "delete" ? "#f3f4f6" : "#ffffff",
-                }}
-              >
-                {isDeleting ? "Deleting..." : "Delete"}
-              </button>
-            </div>
-          )}
-        </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    navigate(`/update/${id}`);
+                  }}
+                  className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100"
+                  onMouseEnter={() => setHoveredAction("update")}
+                  onMouseLeave={() => setHoveredAction(null)}
+                  style={{
+                    backgroundColor: hoveredAction === "update" ? "#f3f4f6" : "#ffffff",
+                    color: "#111827",
+                  }}
+                >
+                  Update
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    handleDelete();
+                  }}
+                  disabled={isDeleting}
+                  className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-100 disabled:opacity-60"
+                  onMouseEnter={() => setHoveredAction("delete")}
+                  onMouseLeave={() => setHoveredAction(null)}
+                  style={{
+                    backgroundColor: hoveredAction === "delete" ? "#f3f4f6" : "#ffffff",
+                  }}
+                >
+                  {isDeleting ? "Deleting..." : "Delete"}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </header>
 
       <div className="w-full overflow-hidden rounded-2xl border border-gray-200">

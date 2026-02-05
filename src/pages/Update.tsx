@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "../lib/supabase";
+import { useAppSelector } from "../store/hooks";
 
 export default function Update() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const user = useAppSelector((state) => state.auth.user);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -29,6 +31,11 @@ export default function Update() {
           .single();
 
         if (error) throw error;
+
+        if (!user || data.user_id !== user.id) {
+          setError("You do not have permission to edit this post.");
+          return;
+        }
 
         setTitle(data.title ?? "");
         setContent(data.content ?? "");
@@ -109,6 +116,12 @@ export default function Update() {
   if (loading) {
     return (
       <div className="w-full px-6 mt-10">Loading...</div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="w-full px-6 mt-10 text-red-600">{error}</div>
     );
   }
 
