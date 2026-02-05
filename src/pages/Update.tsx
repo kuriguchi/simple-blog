@@ -32,7 +32,10 @@ export default function Update() {
 
         if (error) throw error;
 
-        if (!user || data.user_id !== user.id) {
+        const currentUsername = (user?.user_metadata?.username as string | undefined) ?? user?.email ?? null;
+        const canEdit = Boolean(user && (data.user_id === user.id || (!data.user_id && currentUsername && data.username === currentUsername)));
+
+        if (!canEdit) {
           setError("You do not have permission to edit this post.");
           return;
         }
