@@ -350,8 +350,8 @@ export default function BlogDetail() {
   };
 
   return (
-    <article className="w-full px-6 mt-10 mb-10 space-y-6">
-      <header className="flex items-start justify-between gap-4">
+    <article className="w-full px-3 mt-6 mb-10 space-y-6 sm:px-6 sm:mt-10">
+      <header className="flex flex-col items-start justify-between gap-4 sm:flex-row">
         <div className="space-y-2">
           <h1 className="text-3xl font-bold text-gray-900">{blog.title}</h1>
           <p className="text-sm text-gray-500">

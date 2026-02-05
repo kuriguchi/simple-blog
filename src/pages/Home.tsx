@@ -39,7 +39,7 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="w-full px-6 mt-10 space-y-4">
+    <div className="w-full px-0 mt-6 space-y-3 sm:px-6 sm:mt-10 sm:space-y-4">
       {error && (
         <p className="text-sm text-red-600">{error}</p>
       )}

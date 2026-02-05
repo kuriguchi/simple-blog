@@ -41,7 +41,7 @@ export default function Register() {
   }
 
   return (
-    <section className="mx-10 mt-8 w-[calc(100%-5rem)] px-6 p-4 border border-gray-200 rounded-xl bg-white shadow-sm">
+    <section className="mx-3 mt-6 w-auto px-4 p-4 border border-gray-200 rounded-xl bg-white shadow-sm sm:mx-10 sm:mt-8 sm:w-[calc(100%-5rem)] sm:px-6">
       <h2 className="text-xl font-semibold text-gray-900">Register</h2>
       <form onSubmit={handleRegister} className="mt-4 space-y-4">
         <div className="space-y-1">
