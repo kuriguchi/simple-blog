@@ -40,6 +40,7 @@ export default function BlogDetail() {
   const [comments, setComments] = useState<Comment[]>([]);
   const [commentText, setCommentText] = useState("");
   const [commentImage, setCommentImage] = useState<File | null>(null);
+  const commentFileInputRef = useRef<HTMLInputElement | null>(null);
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [commentError, setCommentError] = useState<string | null>(null);
   const [replyTo, setReplyTo] = useState<string | null>(null);
@@ -246,11 +247,13 @@ export default function BlogDetail() {
         {comment.content}
       </p>
       {comment.image_url && (
-        <img
-          src={comment.image_url}
-          alt="Comment"
-          className="mt-3 h-40 w-40 rounded-lg object-cover border border-gray-200"
-        />
+        <div className="mt-3 h-48 w-48 aspect-square rounded-xl border border-gray-200 overflow-hidden">
+          <img
+            src={comment.image_url}
+            alt="Comment"
+            className="h-full w-full object-cover"
+          />
+        </div>
       )}
       <button
         type="button"
@@ -369,7 +372,7 @@ export default function BlogDetail() {
   return (
     <article className="w-full px-3 mt-6 mb-10 space-y-6 sm:px-6 sm:mt-10">
       <header className="flex w-full flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
-        <div className="w-full space-y-2">
+        <div className="w-full space-y-2 z-10">
           <h1 className="text-3xl font-bold text-gray-900">{blog.title}</h1>
           <p className="text-sm text-gray-500">
             {new Date(blog.created_at).toLocaleString()} · By {blog.username ?? "Anonymous"}
@@ -377,7 +380,7 @@ export default function BlogDetail() {
         </div>
 
         {canEdit && (
-          <div className="relative self-end sm:self-auto" ref={menuRef}>
+          <div className="relative self-end sm:self-auto z-20" ref={menuRef}>
             <button
               type="button"
               onClick={() => setMenuOpen((prev) => !prev)}
@@ -430,11 +433,11 @@ export default function BlogDetail() {
         )}
       </header>
 
-      <div className="w-full overflow-hidden rounded-2xl border border-gray-200">
+      <div className="w-full max-w-3xl mx-auto overflow-hidden rounded-2xl border border-gray-200 bg-gray-100">
         <img
           src={blog.image_url ?? fallbackImage}
           alt={blog.title}
-          className="w-full max-h-[480px] object-cover"
+          className="w-full max-h-[480px] object-contain"
         />
       </div>
 
@@ -456,12 +459,35 @@ export default function BlogDetail() {
             className="w-full min-h-[120px] rounded-lg border border-gray-300 px-3 py-2 text-sm"
             required
           />
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(event) => setCommentImage(event.target.files?.[0] ?? null)}
-            className="w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-700 file:mr-3 file:rounded-md file:border-0 file:bg-gray-200 file:px-3 file:py-2 file:text-sm file:font-medium file:text-gray-800 hover:file:bg-gray-300"
-          />
+          <div className="relative">
+            {commentImage && (
+              <div className="mb-4 relative inline-block">
+                <img
+                  src={URL.createObjectURL(commentImage)}
+                  alt="Preview"
+                  className="h-48 w-48 rounded-xl object-cover border border-gray-300"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCommentImage(null);
+                    if (commentFileInputRef.current) commentFileInputRef.current.value = "";
+                  }}
+                  className="absolute top-2 right-2 bg-black bg-opacity-60 rounded-full w-7 h-7 flex items-center justify-center text-white text-lg font-bold hover:bg-red-600 transition"
+                  aria-label="Remove image"
+                >
+                  ×
+                </button>
+              </div>
+            )}
+            <input
+              type="file"
+              accept="image/*"
+              ref={commentFileInputRef}
+              onChange={(event) => setCommentImage(event.target.files?.[0] ?? null)}
+              className="w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-700 file:mr-3 file:rounded-md file:border-0 file:bg-gray-200 file:px-3 file:py-2 file:text-sm file:font-medium file:text-gray-800 hover:file:bg-gray-300"
+            />
+          </div>
           {commentError && (
             <p className="text-sm text-red-600">{commentError}</p>
           )}

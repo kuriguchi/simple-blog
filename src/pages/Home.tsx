@@ -36,6 +36,21 @@ export default function Home() {
 
   useEffect(() => {
     fetchBlogs();
+
+    const channel = supabase
+      .channel("blogs-changes")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "blogs" },
+        () => {
+          fetchBlogs();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   return (

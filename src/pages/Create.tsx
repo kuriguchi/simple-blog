@@ -113,15 +113,34 @@ export default function Create() {
           />
         </div>
 
-        <div className="space-y-1">
+        <div className="space-y-1 flex flex-col items-start">
           <label className="text-sm font-medium text-gray-700" htmlFor="image">Image</label>
-          <input
-            id="image"
-            type="file"
-            accept="image/*"
-            onChange={(event) => setImageFile(event.target.files?.[0] ?? null)}
-            className="w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-700 file:mr-3 file:rounded-md file:border-0 file:bg-gray-200 file:px-3 file:py-2 file:text-sm file:font-medium file:text-gray-800 hover:file:bg-gray-300"
-          />
+          <div className="flex w-full flex-col items-start gap-3">
+            {imageFile && (
+              <div className="mb-4 relative inline-block">
+                <img
+                  src={URL.createObjectURL(imageFile)}
+                  alt="Preview"
+                  className="h-48 w-48 rounded-xl object-cover border border-gray-300"
+                />
+                <button
+                  type="button"
+                  onClick={() => setImageFile(null)}
+                  className="absolute top-2 right-2 bg-black bg-opacity-60 rounded-full w-7 h-7 flex items-center justify-center text-white text-lg font-bold hover:bg-red-600 transition"
+                  aria-label="Remove image"
+                >
+                  ×
+                </button>
+              </div>
+            )}
+            <input
+              id="image"
+              type="file"
+              accept="image/*"
+              onChange={(event) => setImageFile(event.target.files?.[0] ?? null)}
+              className="w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-700 file:mr-3 file:rounded-md file:border-0 file:bg-gray-200 file:px-3 file:py-2 file:text-sm file:font-medium file:text-gray-800 hover:file:bg-gray-300"
+            />
+          </div>
         </div>
 
         {error && (

@@ -14,11 +14,11 @@ export default function ArticleCard({ id, title, author, content, image }: BlogC
       <article className="w-full max-w-full mx-2 flex flex-col gap-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md overflow-hidden sm:flex-row lg:max-w-5xl lg:mx-auto">
 
       {/* Image */}
-      <div className="h-44 w-full shrink-0 overflow-hidden rounded-lg sm:h-32 sm:w-32">
+      <div className="relative w-full aspect-[1/1] self-start overflow-hidden rounded-lg bg-gray-100 sm:h-32 sm:w-32 sm:shrink-0">
         <img
           src={image}
           alt={title}
-          className="w-full h-full object-cover"
+          className="absolute aspect-square h-full w-full object-cover"
         />
       </div>
 

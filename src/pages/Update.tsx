@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import { useAppSelector } from "../store/hooks";
@@ -14,6 +14,8 @@ export default function Update() {
   const [content, setContent] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(null);
+  const imageInputRef = useRef<HTMLInputElement | null>(null);
+  const originalImageUrlRef = useRef<string | null>(null);
 
   useEffect(() => {
     const fetchBlog = async () => {
@@ -42,7 +44,9 @@ export default function Update() {
 
         setTitle(data.title ?? "");
         setContent(data.content ?? "");
-        setCurrentImageUrl(data.image_url ?? null);
+        const existingImageUrl = data.image_url ?? null;
+        setCurrentImageUrl(existingImageUrl);
+        originalImageUrlRef.current = existingImageUrl;
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to fetch post");
       } finally {
@@ -65,6 +69,7 @@ export default function Update() {
       setError(null);
 
       let imageUrl = currentImageUrl;
+      const existingImageUrl = originalImageUrlRef.current;
 
       if (imageFile) {
         const extension = imageFile.name.split(".").pop();
@@ -88,12 +93,18 @@ export default function Update() {
 
         imageUrl = publicData?.publicUrl ?? null;
 
-        if (currentImageUrl) {
-          const match = currentImageUrl.match(/\/storage\/v1\/object\/public\/blog-images\/(.+)$/);
+        if (existingImageUrl) {
+          const match = existingImageUrl.match(/\/storage\/v1\/object\/public\/blog-images\/(.+)$/);
           const oldPath = match?.[1];
           if (oldPath) {
             await supabase.storage.from("blog-images").remove([oldPath]);
           }
+        }
+      } else if (!imageFile && currentImageUrl === null && existingImageUrl) {
+        const match = existingImageUrl.match(/\/storage\/v1\/object\/public\/blog-images\/(.+)$/);
+        const oldPath = match?.[1];
+        if (oldPath) {
+          await supabase.storage.from("blog-images").remove([oldPath]);
         }
       }
 
@@ -157,22 +168,65 @@ export default function Update() {
           />
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-2 flex flex-col items-start">
           <label className="text-sm font-medium text-gray-700" htmlFor="image">Image</label>
           {currentImageUrl && (
-            <img
-              src={currentImageUrl}
-              alt="Current"
-              className="h-32 w-48 rounded-lg object-cover border border-gray-200"
-            />
+            <div className="relative inline-block">
+              <img
+                src={currentImageUrl}
+                alt="Current"
+                className="h-32 w-48 rounded-lg object-cover border border-gray-200"
+              />
+              <button
+                type="button"
+                onClick={() => setCurrentImageUrl(null)}
+                className="absolute top-2 right-2 bg-black bg-opacity-60 rounded-full w-7 h-7 flex items-center justify-center text-white text-lg font-bold hover:bg-red-600 transition"
+                aria-label="Remove current image"
+              >
+                ×
+              </button>
+            </div>
           )}
-          <input
-            id="image"
-            type="file"
-            accept="image/*"
-            onChange={(event) => setImageFile(event.target.files?.[0] ?? null)}
-            className="w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-700 file:mr-3 file:rounded-md file:border-0 file:bg-gray-200 file:px-3 file:py-2 file:text-sm file:font-medium file:text-gray-800 hover:file:bg-gray-300"
-          />
+          <div className="flex w-full flex-col items-start gap-3">
+            {imageFile && (
+              <div className="mb-4 relative inline-block">
+                <img
+                  src={URL.createObjectURL(imageFile)}
+                  alt="Preview"
+                  className="h-48 w-48 rounded-xl object-cover border border-gray-300"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setImageFile(null);
+                    setCurrentImageUrl(null);
+                    originalImageUrlRef.current = null;
+                    if (imageInputRef.current) imageInputRef.current.value = "";
+                  }}
+                  className="absolute top-2 right-2 bg-black bg-opacity-60 rounded-full w-7 h-7 flex items-center justify-center text-white text-lg font-bold hover:bg-red-600 transition"
+                  aria-label="Remove image"
+                >
+                  ×
+                </button>
+              </div>
+            )}
+            <input
+              id="image"
+              type="file"
+              accept="image/*"
+              ref={imageInputRef}
+              onChange={(event) => {
+                const nextFile = event.target.files?.[0] ?? null;
+                setImageFile(nextFile);
+                if (nextFile) {
+                  setCurrentImageUrl(null);
+                } else if (originalImageUrlRef.current) {
+                  setCurrentImageUrl(originalImageUrlRef.current);
+                }
+              }}
+              className="w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-700 file:mr-3 file:rounded-md file:border-0 file:bg-gray-200 file:px-3 file:py-2 file:text-sm file:font-medium file:text-gray-800 hover:file:bg-gray-300"
+            />
+          </div>
         </div>
 
         {error && (
